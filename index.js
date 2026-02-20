@@ -1,44 +1,46 @@
+const apiKey = "3de243";
 
-let key = "3de243";
+const searchBtn = document.getElementById("searchBtn");
+const resultDiv = document.getElementById("result");
 
+searchBtn.addEventListener("click", searchMovie);
 
-function searchMovie(){
-    
-  const movie = document.getElementById("Search").value; // get html file documet and pass search to movie 
+async function searchMovie() {
 
-  let url = "https://www.omdbapi.com/?t=" + movie + "&apikey=" + key;  // url to get the movie data  and add api key
+    const movieName = document.getElementById("searchInput").value.trim();
 
+    if (movieName === "") {
+        alert("Please enter a movie name");
+        return;
+    }
 
-  let httpRequest = new XMLHttpRequest(); // create a new XMLHttpRequest object
+    resultDiv.innerHTML = "<p>Loading...</p>";
 
-  httpRequest.open("GET", url); // open a connection to the url
+    try {
 
-  httpRequest.responseType = "json";
+        const response = await fetch(
+            `https://www.omdbapi.com/?t=${movieName}&apikey=${apiKey}`
+        );
 
-  httpRequest.send(); // send the request to the url
-   
-  httpRequest.onload = function(){
-     
-      console.log(httpRequest.response); // print the response text
-      let movie = httpRequest.response;
+        const data = await response.json();
 
-      document.getElementById("title").innerHTML = movie.Title;
-      document.getElementById("year").innerHTML = movie.Year;
-      document.getElementById("rating").innerHTML = movie.imdbRating;
-      document.getElementById("poster").src = movie.Poster;
-      document.getElementById("plot").innerHTML = movie.Plot;
-      document.getElementById("genre").innerHTML = movie.Genre;
-      document.getElementById("director").innerHTML = movie.Director;
-      document.getElementById("actors").innerHTML = movie.Actors;
-      document.getElementById("language").innerHTML = movie.Language;
-      document.getElementById("country").innerHTML = movie.Country;
-      document.getElementById("awards").innerHTML = movie.Awards;
-      document.getElementById("boxoffice").innerHTML = movie.BoxOffice;
-      document.getElementById("website").innerHTML = movie.Website;
-      document.getElementById("response").innerHTML = movie.Response;
+        if (data.Response === "False") {
+            resultDiv.innerHTML = `<p>❌ Movie not found!</p>`;
+            return;
+        }
 
-  }
+        resultDiv.innerHTML = `
+            <div class="movie-info">
+                <h2>${data.Title}</h2>
+                <p><strong>Year:</strong> ${data.Year}</p>
+                <p><strong>IMDB Rating:</strong> ⭐ ${data.imdbRating}</p>
+                <img src="${data.Poster}" alt="Poster">
+                <p>${data.Plot}</p>
+            </div>
+        `;
 
-
-
+    } catch (error) {
+        resultDiv.innerHTML = `<p>⚠️ Something went wrong!</p>`;
+        console.error(error);
+    }
 }
